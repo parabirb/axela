@@ -19,7 +19,7 @@ async function rollHandler(client, event, argv) {
             return;
         }
 
-        const dice = [randomBytes(parameters[0])].map(
+        const dice = [...randomBytes(parameters[0])].map(
             (number) => (number % parameters[1]) + 1
         );
         if (dice.length === 1) {
