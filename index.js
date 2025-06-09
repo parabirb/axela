@@ -350,8 +350,7 @@ client.on("privmsg", async (event) => {
                 nick: splitMessage[0].toLowerCase(),
                 desc: parsedDesc
                     .slice(0, parsedDesc.length > 1 ? parsedDesc.length - 1 : 1)
-                    .join(" ("), // eslint-disable-line unicorn/prefer-negative-index
-                // eslint is disabled for the above line because the suggested fix would make the code less readable
+                    .join(" ("),
             });
             client.say(
                 splitMessage[0],
