@@ -14,7 +14,7 @@ async function deleteHandler(
         return;
     }
 
-    const user = userQuery({ nick: event.nick.toLowerCase() });
+    const user = await userQuery.execute({ nick: event.nick.toLowerCase() });
 
     if (user)
         switch (argv[1]) {
