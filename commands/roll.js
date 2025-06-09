@@ -1,7 +1,7 @@
 import { env } from "node:process";
 import { randomBytes } from "node:crypto";
 
-async function rollHandler(client, event, argv) {
+async function rollHandler(client, event, argv, { colors }) {
     if (argv.length !== 2) {
         client.say(
             event.nick,
@@ -23,11 +23,11 @@ async function rollHandler(client, event, argv) {
             (number) => (number % parameters[1]) + 1
         );
         if (dice.length === 1) {
-            client.action(target, `rolls the die... it's a ${dice[0]}!`);
+            client.action(target, `rolls the die... it's a ${colors.red(dice[0])}!`);
         } else {
             client.action(
                 target,
-                `rolls the dice... they add up to ${dice.reduce((previous, current) => previous + current, 0)}! (${dice.join(", ")})`
+                `rolls the dice... they add up to ${colors.red(dice.reduce((previous, current) => previous + current, 0))}! ${colors.gray(`(${dice.join(", ")})`)}`
             );
         }
     } else {

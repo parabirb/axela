@@ -3,8 +3,8 @@ import { env } from "node:process";
 import irc from "irc-framework";
 import Loki from "lokijs";
 import { eq, sql } from "drizzle-orm";
+import colors from "irc-colors";
 import { db } from "./db.js";
-// Import colors from "irc-colors";
 import { users, channels } from "./schema.js";
 import { getIntro, getDesc } from "./greetings.js";
 import commands from "./commands.js";
@@ -167,7 +167,10 @@ client.on("join", async (event) => {
                 cachedGreet.time + 3600 * 1000 * Number(env.GREET_COOLDOWN) <=
                     Date.now())
         ) {
-            client.action(event.channel, `${getIntro()} "${event.nick} ${getDesc(sqlUser)}"`);
+            client.action(
+                event.channel,
+                `${getIntro()} "${colors.blue(event.nick)}, ${getDesc(sqlUser)}"`
+            );
             greetCache.insertOne({
                 nick: event.nick,
                 channel: event.channel,
@@ -226,7 +229,7 @@ client.on("nick", async (event) => {
                 ) {
                     client.action(
                         channel,
-                        `${getIntro()} "${event.new_nick}, ${getDesc(sqlUser)}"`
+                        `${getIntro()} "${colors.blue(event.new_nick)}, ${getDesc(sqlUser)}"`
                     );
                     greetCache.insertOne({
                         nick: event.new_nick,
@@ -335,6 +338,7 @@ client.on("privmsg", async (event) => {
                 channels,
                 users,
                 eq,
+                colors,
             });
     } else if (
         env.MIGRATION &&

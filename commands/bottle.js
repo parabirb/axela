@@ -5,7 +5,7 @@ async function bottleHandler(
     client,
     event,
     argv,
-    { db, userCache, bottleCache, users, userQuery, eq }
+    { db, userCache, bottleCache, users, userQuery, eq, colors }
 ) {
     if (argv.length === 1) {
         if (event.target.startsWith("#")) {
@@ -40,7 +40,7 @@ async function bottleHandler(
                         ];
                     client.action(
                         event.target,
-                        `spin-spin-spins the bottle... and it lands on ${user.nick}!`
+                        `spin-spin-spins the bottle... and it lands on ${colors.red(user.nick)}!`
                     );
                     bottleCache.insertOne({
                         nick: event.nick,
