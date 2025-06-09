@@ -19,6 +19,9 @@ async function bottleHandler(
                     Date.now()
             ) {
                 const bottleUsers = userCache.find({
+                    nick: {
+                        $ne: event.nick,
+                    },
                     channels: {
                         $contains: event.target,
                     },
