@@ -6,7 +6,7 @@ async function sourceHandler(client, event) {
 
 const source = env.SOURCE ? {
     name: "source",
-    usage: " ",
+    usage: "",
     description:
         "Sends you a link to the source code for the bot.",
     handler: sourceHandler,

@@ -20,7 +20,7 @@ async function migrateHandler(client, event, argv, { userQuery }) {
 const migrate = env.MIGRATION
     ? {
           name: "migrate",
-          usage: " ",
+          usage: "",
           description: "Migrates your description from Alexa.",
           handler: migrateHandler,
       }
