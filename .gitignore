@@ -1,6 +1,10 @@
 # dependencies (bun install)
 node_modules
 
+# sql bullshit
+drizzle
+axela.db
+
 # output
 out
 dist
