@@ -167,7 +167,7 @@ client.on("join", async (event) => {
                 cachedGreet.time + 3600 * 1000 * Number(env.GREET_COOLDOWN) <=
                     Date.now())
         ) {
-            client.action(event.channel, `${getIntro()} "${getDesc(sqlUser)}"`);
+            client.action(event.channel, `${getIntro()} "${event.nick} ${getDesc(sqlUser)}"`);
             greetCache.insertOne({
                 nick: event.nick,
                 channel: event.channel,
@@ -187,7 +187,7 @@ client.on("part", (event) => {
     const cachedUser = userCache.findOne({
         nick: event.nick,
     });
-    if (cachedUser.channels.length === 1) {
+    if (cachedUser?.channels.length === 1) {
         userCache.remove(cachedUser);
     } else {
         delete cachedUser.channels[event.channel];
@@ -226,7 +226,7 @@ client.on("nick", async (event) => {
                 ) {
                     client.action(
                         channel,
-                        `${getIntro()} "${getDesc(sqlUser)}"`
+                        `${getIntro()} "${event.new_nick}, ${getDesc(sqlUser)}"`
                     );
                     greetCache.insertOne({
                         nick: event.new_nick,
