@@ -5,19 +5,23 @@ async function bottleHandler(
     client,
     event,
     argv,
-    { db, userCache, bottleCache, users, userQuery, eq, colors }
+    { db, userCache, bottleCache, users, userQuery, eq, colors },
 ) {
     if (argv.length === 1) {
         if (event.target.startsWith("#")) {
             const cachedBottle = bottleCache.findOne({
                 nick: event.nick,
                 channel: event.target,
+                time: {
+                    $lte: Date.now() - 1000 * Number(env.BOTTLE_COOLDOWN),
+                },
             });
-            if (
-                !cachedBottle ||
-                cachedBottle.time + 1000 * Number(env.BOTTLE_COOLDOWN) <=
-                    Date.now()
-            ) {
+            if (cachedBottle) {
+                client.say(
+                    event.nick,
+                    `You need to wait before trying to run the bottle command in ${event.target} again.`,
+                );
+            } else {
                 const bottleUsers = userCache.find({
                     nick: {
                         $ne: event.nick,
@@ -31,7 +35,7 @@ async function bottleHandler(
                 if (bottleUsers.length < 2) {
                     client.say(
                         event.nick,
-                        `There aren't enough free users in ${event.target} to run the bottle command.`
+                        `There aren't enough free users in ${event.target} to run the bottle command.`,
                     );
                 } else {
                     const user =
@@ -40,7 +44,7 @@ async function bottleHandler(
                         ];
                     client.action(
                         event.target,
-                        `spin-spin-spins the bottle... and it lands on ${colors.red(user.nick)}!`
+                        `spin-spin-spins the bottle... and it lands on ${colors.red(user.nick)}!`,
                     );
                     bottleCache.insertOne({
                         nick: event.nick,
@@ -48,16 +52,11 @@ async function bottleHandler(
                         time: Date.now(),
                     });
                 }
-            } else {
-                client.say(
-                    event.nick,
-                    `You need to wait before trying to run the bottle command in ${event.target} again.`
-                );
             }
         } else {
             client.say(
                 event.nick,
-                "When running with no arguments, this command will only work in a channel."
+                "When running with no arguments, this command will only work in a channel.",
             );
         }
     } else if (argv.length === 2) {
@@ -80,7 +79,7 @@ async function bottleHandler(
         } else if (argv[1] === "status") {
             client.say(
                 event.nick,
-                `You have bottle spins ${user.bottle ? "enabled" : "disabled"}.`
+                `You have bottle spins ${user.bottle ? "enabled" : "disabled"}.`,
             );
         } else {
             client.say(event.nick, "Unrecognized parameters.");

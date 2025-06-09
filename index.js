@@ -50,7 +50,7 @@ setInterval(
         clearGreetCache();
         clearBottleCache();
     },
-    60 * 1000 * Number(env.CACHE_CLEAR)
+    60 * 1000 * Number(env.CACHE_CLEAR),
 );
 
 // Prepared query for specific things--improves perf or smth, idk
@@ -169,7 +169,7 @@ client.on("join", async (event) => {
         ) {
             client.action(
                 event.channel,
-                `${getIntro()} "${colors.blue(event.nick)}, ${getDesc(sqlUser)}"`
+                `${getIntro()} "${colors.blue(event.nick)}, ${getDesc(sqlUser)}"`,
             );
             greetCache.insertOne({
                 nick: event.nick,
@@ -192,7 +192,7 @@ client.on("part", (event) => {
     });
     if (cachedUser?.channels.length === 1) {
         userCache.remove(cachedUser);
-    } else {
+    } else if (cachedUser) {
         delete cachedUser.channels[event.channel];
         userCache.update(cachedUser);
     }
@@ -229,7 +229,7 @@ client.on("nick", async (event) => {
                 ) {
                     client.action(
                         channel,
-                        `${getIntro()} "${colors.blue(event.new_nick)}, ${getDesc(sqlUser)}"`
+                        `${getIntro()} "${colors.blue(event.new_nick)}, ${getDesc(sqlUser)}"`,
                     );
                     greetCache.insertOne({
                         nick: event.new_nick,
@@ -313,7 +313,7 @@ client.on("wholist", async (event) => {
                         updatedUser.bottle = true;
                         db.update(updatedUser);
                     }
-                })()
+                })(),
             );
         }
     }
@@ -358,7 +358,7 @@ client.on("privmsg", async (event) => {
             });
             client.say(
                 splitMessage[0],
-                `Your description has been migrated to ${env.NICK}. If you have an image and/or link in your Alexa description, you'll have to set it separately. You should also remove your description from Alexa after fully setting up your Axela profile, so that you don't get greeted twice.`
+                `Your description has been migrated to ${env.NICK}. If you have an image and/or link in your Alexa description, you'll have to set it separately. You should also remove your description from Alexa after fully setting up your Axela profile, so that you don't get greeted twice.`,
             );
             const cachedUser = userCache.findOne({ nick: splitMessage[0] });
             if (cachedUser) {
