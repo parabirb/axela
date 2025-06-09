@@ -17,7 +17,7 @@ async function descHandler(client, event, argv, { db, userQuery, users, eq }) {
         return;
     }
 
-    const user = userQuery({ nick: event.nick.toLowerCase() });
+    const user = await userQuery.execute({ nick: event.nick.toLowerCase() });
     if (user) {
         await db
             .update(users)
