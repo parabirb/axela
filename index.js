@@ -1,10 +1,10 @@
 // deps
 import loki from "lokijs";
 import { db } from "./db.js";
-import colors from "irc-colors";
+// import colors from "irc-colors";
 import irc from "irc-framework";
 import { eq } from "drizzle-orm";
-import { users, channels } from "./schema.js";
+import { /*users,*/ channels } from "./schema.js";
 
 // create our irc client with env params
 const client = new irc.Client({
@@ -69,6 +69,17 @@ client.on("kick", async (e) => {
                 }
             });
     }
+    // plus update user cache if someone gets kicked
+    else {
+        const cachedUser = userCache.findOne({
+            nick: e.kicked,
+        });
+        if (cachedUser.channels.length === 1) userCache.remove(cachedUser);
+        else {
+            delete cachedUser.channels[e.channel];
+            userCache.update(cachedUser);
+        }
+    }
 });
 
 client.on("join", (e) => {
@@ -99,6 +110,46 @@ client.on("join", (e) => {
     }
 });
 
+client.on("part", (e) => {
+    const cachedUser = userCache.findOne({
+        nick: e.nick,
+    });
+    if (cachedUser.channels.length === 1) userCache.remove(cachedUser);
+    else {
+        delete cachedUser.channels[e.channel];
+        userCache.update(cachedUser);
+    }
+});
+
+client.on("quit", (e) => {
+    userCache.findAndRemove({
+        nick: e.nick,
+    });
+});
+
+client.on("nick", (e) => {
+    const cachedUser = userCache.findOne({
+        nick: e.nick,
+    });
+    if (cachedUser) {
+        userCache.remove(cachedUser);
+        cachedUser.nick = e.new_nick;
+        userCache.insertOne(cachedUser);
+        // TODO: redo greetings
+    }
+});
+
+client.on("whois", (e) => {
+    const cachedUser = userCache.findOne({
+        nick: e.nick,
+    });
+    // people can theoretically part before our whois finishes, so just in case, we'll wrap this in an if statement
+    if (cachedUser) {
+        if (e.away) cachedUser.away = true;
+        userCache.update(cachedUser);
+    }
+});
+
 client.on("away", (e) => {
     const cachedUser = userCache.findOne({
         nick: e.nick,
@@ -113,7 +164,7 @@ client.on("back", (e) => {
     const cachedUser = userCache.findOne({
         nick: e.nick,
     });
-    if (cacheduser) {
+    if (cachedUser) {
         cachedUser.away = false;
         userCache.update(cachedUser);
     }
