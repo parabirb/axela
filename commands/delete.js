@@ -4,7 +4,7 @@ async function deleteHandler(
     client,
     event,
     argv,
-    { db, users, userQuery, eq }
+    { db, users, userQuery, eq, channels }
 ) {
     if (argv.length !== 2) {
         client.say(
