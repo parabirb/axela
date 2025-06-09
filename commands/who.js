@@ -15,7 +15,7 @@ async function whoHandler(client, event, argv, { userQuery }) {
     if (user) {
         client.say(event.nick, `${argv[1]} is: ${getDesc(user)}`);
     } else {
-        client.say("That user is not registered with me.");
+        client.say(event.nick, "That user is not registered with me.");
     }
 }
 
