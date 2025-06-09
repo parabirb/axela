@@ -342,12 +342,10 @@ client.on("privmsg", async (event) => {
         /^.+ is: .+$/.test(event.message)
     ) {
         const splitMessage = event.message.split(" is: ");
-        console.log(splitMessage);
         if (
             !(await userQuery.execute({ nick: splitMessage[0].toLowerCase() }))
         ) {
             const parsedDesc = splitMessage.slice(1).join(" is: ").split(" (");
-            console.log(parsedDesc);
             await db.insert(users).values({
                 nick: splitMessage[0].toLowerCase(),
                 desc: parsedDesc
