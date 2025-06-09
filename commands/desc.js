@@ -1,6 +1,6 @@
 import { env } from "node:process";
 
-async function descHandler(client, event, argv, { db, userQuery, users, eq }) {
+async function descHandler(client, event, argv, { db, userQuery, userCache, users, eq }) {
     if (argv.length === 1) {
         client.say(
             event.nick,
@@ -30,6 +30,11 @@ async function descHandler(client, event, argv, { db, userQuery, users, eq }) {
             desc: argv.slice(1).join(" "),
         });
         client.say(event.nick, "Your profile has been created.");
+        const cachedUser = userCache.findOne({ nick: event.nick });
+        if (cachedUser) {
+            cachedUser.bottle = true;
+            userCache.update(cachedUser);
+        }
     }
 }
 

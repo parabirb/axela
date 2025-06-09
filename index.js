@@ -133,7 +133,9 @@ client.on("join", async (event) => {
     }
     // Otherwise, we need to update our cache and potentially greet
     else {
-        const sqlUser = await userQuery.execute({ nick: event.nick.toLowerCase() });
+        const sqlUser = await userQuery.execute({
+            nick: event.nick.toLowerCase(),
+        });
         const cachedUser = userCache.findOne({
             nick: event.nick,
         });
@@ -173,7 +175,7 @@ client.on("join", async (event) => {
             });
             return;
         }
-        
+
         if (!sqlUser) {
             const channel = await channelQuery.execute({ name: event.channel });
             if (channel.noticesEnabled) client.notice(event.nick, env.NOTICE);
@@ -207,7 +209,9 @@ client.on("nick", async (event) => {
         userCache.remove(cachedUser);
         cachedUser.nick = event.new_nick;
         userCache.insertOne(cachedUser);
-        const sqlUser = await userQuery.execute({ nick: event.new_nick.toLowerCase() });
+        const sqlUser = await userQuery.execute({
+            nick: event.new_nick.toLowerCase(),
+        });
         if (sqlUser) {
             for (const channel of Object.keys(cachedUser.channels)) {
                 const cachedGreet = greetCache.findOne({
@@ -220,7 +224,10 @@ client.on("nick", async (event) => {
                         3600 * 1000 * Number(env.GREET_COOLDOWN) <=
                         Date.now()
                 ) {
-                    client.action(channel, `${getIntro()} "${getDesc(sqlUser)}"`);
+                    client.action(
+                        channel,
+                        `${getIntro()} "${getDesc(sqlUser)}"`
+                    );
                     greetCache.insertOne({
                         nick: event.new_nick,
                         channel,
@@ -342,7 +349,15 @@ client.on("privmsg", async (event) => {
                 desc: parsedDesc.slice(0, parsedDesc.length - 1).join(" ("), // eslint-disable-line unicorn/prefer-negative-index
                 // eslint is disabled for the above line because the suggested fix would make the code less readable
             });
-            client.say(splitMessage[0], "Your description has been migrated.");
+            client.say(
+                splitMessage[0],
+                `Your description has been migrated to ${env.NICK}. If you have an image and/or link in your Alexa description, you'll have to set it separately. You should also remove your description from Alexa after fully setting up your Axela profile, so that you don't get greeted twice.`
+            );
+            const cachedUser = userCache.findOne({ nick: splitMessage[0] });
+            if (cachedUser) {
+                cachedUser.bottle = true;
+                userCache.update(cachedUser);
+            }
         }
     }
 });

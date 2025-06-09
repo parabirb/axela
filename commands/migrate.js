@@ -9,9 +9,9 @@ async function migrateHandler(client, event, argv, { userQuery }) {
             "I cannot migrate your profile from Alexa if you already have a description set."
         );
     } else {
-        client.say(
+        client.action(
             event.nick,
-            `${env.NICK} is working on migrating your description. Please wait.`
+            `is working on migrating your description. Please wait.`
         );
         client.say("Alexa", `!who ${event.nick}`);
     }
