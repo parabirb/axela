@@ -1,4 +1,4 @@
-import { db } from "./db";
-import { migrate } from "drizzle-orm/bun-sqlite/migrator";
+import { db } from "./db.js";
+import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 
 migrate(db, { migrationsFolder: "./drizzle" });
