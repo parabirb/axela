@@ -5,7 +5,7 @@ async function rollHandler(client, event, argv) {
     if (argv.length !== 2) {
         client.say(
             event.nick,
-            `Incorrect usage. See ${env.PREFIX}help link for more info.`
+            `Incorrect usage. See ${env.PREFIX}help roll for more info.`
         );
         return;
     }
