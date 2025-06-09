@@ -1,0 +1,6 @@
+{
+  "name": "axela",
+  "module": "index.js",
+  "type": "module",
+  "private": true,
+}
