@@ -34,7 +34,7 @@ async function linkHandler(client, event, argv, { db, userQuery, users, eq }) {
 
 const link = {
     name: "link",
-    usage: " [url]",
+    usage: "[url] ",
     description:
         "Sets your profile link to the specified link.",
     handler: linkHandler,
