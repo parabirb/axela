@@ -2,7 +2,7 @@ import { env } from "node:process";
 import { getDesc } from "../greetings.js";
 
 async function whoHandler(client, event, argv, { userQuery }) {
-    if (argv.length !== 1) {
+    if (argv.length !== 2) {
         client.say(
             event.nick,
             `Incorrect usage. See ${env.PREFIX}help who for more info.`
