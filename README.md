@@ -1,15 +1,8 @@
-# axela
+# Axela
+Axela is a public domain reimplementation of the [Alexa](https://github.com/ebjohnston/alexa) IRC greeting bot. It is designed to provide robust functionality and decent reliability while being easy to read and maintain.
 
-To install dependencies:
-
-```bash
-bun install
-```
-
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.2.15. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+## Need to fix
+- Bottle spin settings don't change on nick change or profile delete
+- Channel names are case sensitive
+- Bottle spins and greetings can't be disabled in whole channels yet
+- Fully consistent formatting (though lint passes)

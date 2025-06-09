@@ -1,39 +1,83 @@
 // Deps
-import { process } from "node:process";
-import loki from "lokijs";
+import { env } from "node:process";
 import irc from "irc-framework";
-import { eq } from "drizzle-orm";
+import Loki from "lokijs";
+import { eq, sql } from "drizzle-orm";
 import { db } from "./db.js";
 // Import colors from "irc-colors";
-import { channels } from "./schema.js";
+import { users, channels } from "./schema.js";
+import { getIntro, getDesc } from "./greetings.js";
+import commands from "./commands.js";
 
 // Create our irc client with env params
 const client = new irc.Client({
-    nick: process.env.NICK,
-    username: process.env.USER,
-    gecos: process.env.GECOS,
-    host: process.env.NETWORK,
-    port: process.env.PORT,
-    tls: Boolean(process.env.TLS),
-    rejectUnauthorized: process.env.TLS === "verify",
+    nick: env.NICK,
+    username: env.USER,
+    gecos: env.GECOS,
+    host: env.NETWORK,
+    port: env.PORT,
+    tls: Boolean(env.TLS),
+    rejectUnauthorized: env.TLS === "verify",
 });
 
 // In-memory database for the user cache
-const memdb = new loki(); // eslint-disable-line new-cap
+const memdb = new Loki();
 const userCache = memdb.addCollection("users", {
     unique: ["nick"],
 });
+const greetCache = memdb.addCollection("greetings");
+const bottleCache = memdb.addCollection("bottles");
+
+// Run tasks to clear the greet and bottle caches occasionally
+function clearGreetCache() {
+    greetCache.findAndRemove({
+        time: {
+            $lte: Date.now() + 3600 * 1000 * Number(env.GREET_COOLDOWN),
+        },
+    });
+}
+
+function clearBottleCache() {
+    bottleCache.findAndRemove({
+        time: {
+            $lte: Date.now() + 1000 * Number(env.BOTTLE_COOLDOWN),
+        },
+    });
+}
+
+setInterval(
+    () => {
+        clearGreetCache();
+        clearBottleCache();
+    },
+    60 * 1000 * Number(env.CACHE_CLEAR)
+);
+
+// Prepared query for specific things--improves perf or smth, idk
+const userQuery = db.query.users
+    .findFirst({
+        where: (users) => eq(users.nick, sql.placeholder("nick")),
+    })
+    .prepare();
+const channelQuery = db.query.channels
+    .findFirst({
+        where: (users) => eq(users.name, sql.placeholder("name")),
+    })
+    .prepare();
 
 // Once we're registered with the server, we need to set modes then ident
 client.on("registered", () => {
-    client.mode(process.env.NICK, `+${process.env.MODES}`);
-    client.say("NickServ", `IDENTIFY ${process.env.PASSWORD}`);
+    client.mode(env.NICK, `+${env.MODES}`);
+    client.say("NickServ", `IDENTIFY ${env.PASSWORD}`);
 });
 
 // Message handler
 client.on("message", async (event) => {
     // If we're logged in
-    if (event.nick === "NickServ" && event.message.startsWith("Password accepted")) {
+    if (
+        event.nick === "NickServ" &&
+        event.message.startsWith("Password accepted")
+    ) {
         console.log("Logged into IRC");
         // Join all the channels in our db
         const toJoin = await db.select({ name: channels.name }).from(channels);
@@ -45,7 +89,7 @@ client.on("message", async (event) => {
 
 client.on("invite", async (event) => {
     // We want to join channels we're invited to
-    if (event.invited === process.env.NICK) {
+    if (event.invited === env.NICK) {
         await db.insert(channels).values({ name: event.channel });
         client.join(event.channel);
     }
@@ -53,7 +97,7 @@ client.on("invite", async (event) => {
 
 client.on("kick", async (event) => {
     // And leave channels we're not welcome in
-    if (event.kicked === process.env.NICK) {
+    if (event.kicked === env.NICK) {
         await db.delete(channels).where(eq(channels.name, event.channel));
         for (const user of userCache.find({
             channels: {
@@ -82,30 +126,57 @@ client.on("kick", async (event) => {
     }
 });
 
-client.on("join", (event) => {
-    console.log(event);
+client.on("join", async (event) => {
     // If it's us, we need to do our WHO polling
-    if (event.nick === process.env.NICK) {
+    if (event.nick === env.NICK) {
         client.who(event.channel);
     }
-    // Otherwise, we need to update our cache
+    // Otherwise, we need to update our cache and potentially greet
     else {
+        const sqlUser = await userQuery.execute({ nick: event.nick.toLowerCase() });
         const cachedUser = userCache.findOne({
             nick: event.nick,
+        });
+        const cachedGreet = greetCache.findOne({
+            nick: event.nick,
+            channel: event.channel,
         });
         if (cachedUser) {
             cachedUser.channels[event.channel] = [];
             userCache.update(cachedUser);
         } else {
             const channels = {};
-            channels[event.channel] = [];
+            channels[event.channel] = {
+                modes: [],
+            };
             userCache.insertOne({
                 nick: event.nick,
                 away: false,
                 channels,
+                bottle: Boolean(sqlUser?.bottle),
             });
             // Need to run a whois if the user isn't already in our cache so we can detect away status
             client.whois(event.nick);
+        }
+
+        if (
+            sqlUser &&
+            (!cachedGreet ||
+                cachedGreet.time + 3600 * 1000 * Number(env.GREET_COOLDOWN) <=
+                    Date.now())
+        ) {
+            client.action(event.channel, `${getIntro()} ${getDesc(sqlUser)}`);
+            greetCache.insertOne({
+                nick: event.nick,
+                channel: event.channel,
+                time: Date.now(),
+            });
+            return;
+        }
+        
+        if (!sqlUser) {
+            const channel = await channelQuery.execute({ name: event.channel });
+            if (channel.noticesEnabled) client.notice(event.nick, env.NOTICE);
         }
     }
 });
@@ -128,7 +199,7 @@ client.on("quit", (event) => {
     });
 });
 
-client.on("nick", (event) => {
+client.on("nick", async (event) => {
     const cachedUser = userCache.findOne({
         nick: event.nick,
     });
@@ -136,7 +207,28 @@ client.on("nick", (event) => {
         userCache.remove(cachedUser);
         cachedUser.nick = event.new_nick;
         userCache.insertOne(cachedUser);
-        // TODO: redo greetings
+        const sqlUser = await userQuery.execute({ nick: event.nick.toLowerCase() });
+        if (sqlUser) {
+            for (const channel of Object.keys(cachedUser.channels)) {
+                const cachedGreet = greetCache.findOne({
+                    nick: event.new_nick,
+                    channel,
+                });
+                if (
+                    !cachedGreet ||
+                    cachedGreet.time +
+                        3600 * 1000 * Number(env.GREET_COOLDOWN) <=
+                        Date.now()
+                ) {
+                    client.action(channel, `${getIntro()} ${getDesc(sqlUser)}`);
+                    greetCache.insertOne({
+                        nick: event.new_nick,
+                        channel,
+                        time: Date.now(),
+                    });
+                }
+            }
+        }
     }
 });
 
@@ -174,11 +266,12 @@ client.on("back", (event) => {
     }
 });
 
-client.on("wholist", (event) => {
-    console.log(event);
+client.on("wholist", async (event) => {
+    // eslint hates me :(
+    const promises = [];
     for (const user of event.users) {
         // We don't want to put ourselves in the cache
-        if (user.nick === process.env.NICK) {
+        if (user.nick === env.NICK) {
             continue;
         }
 
@@ -186,21 +279,72 @@ client.on("wholist", (event) => {
             nick: user.nick,
         });
         if (cachedUser) {
-            cachedUser.channels[user.channel] = user.channel_modes;
+            cachedUser.channels[user.channel] = {
+                modes: user.channel_modes,
+            };
             userCache.update(cachedUser);
         } else {
-            // The channels prop for each user is an object bc it gives us easy indexing and access to channel modes
             const channels = {};
-            channels[user.channel] = user.channel_modes;
+            channels[user.channel] = {
+                modes: user.channel_modes,
+            };
             userCache.insertOne({
                 nick: user.nick,
                 away: user.away,
                 channels,
             });
+            promises.push(
+                (async () => {
+                    const sqlUser = await userQuery.execute({
+                        nick: user.nick.toLowerCase(),
+                    });
+                    const updatedUser = userCache.findOne({ nick: user.nick });
+                    if (sqlUser?.bottle) {
+                        updatedUser.bottle = true;
+                        db.update(updatedUser);
+                    }
+                })()
+            );
         }
     }
 
-    console.log(event.users.find((user) => user.channel_modes.length > 0));
+    await Promise.all(promises);
+});
+
+client.on("privmsg", async (event) => {
+    event.message = event.message.trim();
+    if (event.message.startsWith(env.PREFIX)) {
+        const argv = event.message.split(" ");
+        argv[0] = argv[0].replace(env.PREFIX, "");
+        const command = commands.find((command) => command.name === argv[0]);
+        if (command)
+            command.handler(client, event, argv, {
+                db,
+                userQuery,
+                channelQuery,
+                userCache,
+                bottleCache,
+                commands,
+                channels,
+                users,
+                eq,
+            });
+    } else if (
+        env.MIGRATION &&
+        event.nick === "Alexa" &&
+        /^.+ is: .+$/.test(event.message)
+    ) {
+        const splitMessage = event.message.split(" is: ");
+        if (!(await userQuery.execute({ nick: splitMessage[0] }))) {
+            const parsedDesc = splitMessage.slice(1).join(" is: ").split(" (");
+            await db.insert(users).values({
+                nick: splitMessage[0].toLowerCase(),
+                desc: parsedDesc.slice(0, parsedDesc.length - 1).join(" ("), // eslint-disable-line unicorn/prefer-negative-index
+                // eslint is disabled for the above line because the suggested fix would make the code less readable
+            });
+            client.say(splitMessage[0], "Your description has been migrated.");
+        }
+    }
 });
 
 client.connect();
