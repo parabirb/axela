@@ -1,7 +1,7 @@
 import { env } from "node:process";
 import { getDesc } from "../greetings.js";
 
-async function whoHandler(client, event, argv, { userQuery }) {
+async function whoHandler(client, event, argv, { db, users, eq, userQuery }) {
     if (argv.length !== 2) {
         client.say(
             event.nick,
@@ -14,6 +14,10 @@ async function whoHandler(client, event, argv, { userQuery }) {
 
     if (user) {
         client.say(event.nick, `${argv[1]} is: ${getDesc(user)}`);
+        await db
+            .update(users)
+            .set({ counter: user.counter + 1 })
+            .where(eq(users.nick, argv[1].toLowerCase()));
     } else {
         client.say(event.nick, "That user is not registered with me.");
     }

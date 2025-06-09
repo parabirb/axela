@@ -78,7 +78,7 @@ client.on("message", async (event) => {
         event.nick === "NickServ" &&
         event.message.startsWith("Password accepted")
     ) {
-        console.log("Logged into IRC");
+        console.log("Logged into IRC.");
         // Join all the channels in our db
         const toJoin = await db.select({ name: channels.name }).from(channels);
         for (const { name } of toJoin) {
@@ -342,11 +342,17 @@ client.on("privmsg", async (event) => {
         /^.+ is: .+$/.test(event.message)
     ) {
         const splitMessage = event.message.split(" is: ");
-        if (!(await userQuery.execute({ nick: splitMessage[0] }))) {
+        console.log(splitMessage);
+        if (
+            !(await userQuery.execute({ nick: splitMessage[0].toLowerCase() }))
+        ) {
             const parsedDesc = splitMessage.slice(1).join(" is: ").split(" (");
+            console.log(parsedDesc);
             await db.insert(users).values({
                 nick: splitMessage[0].toLowerCase(),
-                desc: parsedDesc.slice(0, parsedDesc.length - 1).join(" ("), // eslint-disable-line unicorn/prefer-negative-index
+                desc: parsedDesc
+                    .slice(0, parsedDesc.length > 1 ? parsedDesc.length - 1 : 1)
+                    .join(" ("), // eslint-disable-line unicorn/prefer-negative-index
                 // eslint is disabled for the above line because the suggested fix would make the code less readable
             });
             client.say(
