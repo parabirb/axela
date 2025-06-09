@@ -58,14 +58,12 @@ async function bottleHandler(
             );
         }
     } else if (argv.length === 2) {
-        const user = await userQuery.execute({ nick: event.nick.toLowerCase() });
+        const user = await userQuery.execute({
+            nick: event.nick.toLowerCase(),
+        });
         if (!user) {
-            client.say(
-                event.nick,
-                "You need a profile to set preferences!"
-            );
-        }
-        else if (argv[1] === "on" || argv[1] === "off") {
+            client.say(event.nick, "You need a profile to set preferences!");
+        } else if (argv[1] === "on" || argv[1] === "off") {
             const bottle = argv[1] === "on";
             await db
                 .update(users)

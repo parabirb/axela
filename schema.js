@@ -7,7 +7,7 @@ export const users = sqliteTable("users", {
     link: text(),
     counter: integer().default(0),
     bottle: integer({ mode: "boolean" }).default(true),
-    counterEnabled: integer({ mode: "boolean" }).default(true)
+    counterEnabled: integer({ mode: "boolean" }).default(true),
 });
 
 export const channels = sqliteTable("channels", {

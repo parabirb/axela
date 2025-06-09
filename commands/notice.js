@@ -29,12 +29,18 @@ async function noticeHandler(
                 .update(channels)
                 .set({ noticesEnabled: argv[2] === "on" })
                 .where(eq(channels.name, argv[1]));
-            client.say(event.nick, `The notice preference in ${argv[1]} has been updated.`);
+            client.say(
+                event.nick,
+                `The notice preference in ${argv[1]} has been updated.`
+            );
         } else if (argv[2] === "show") {
             const channel = await channelQuery.execute({
-                name: argv[2]
+                name: argv[2],
             });
-            client.say(event.nick, `Notices are ${channel.noticesEnabled ? "enabled" : "disabled"} in ${argv[1]}`);
+            client.say(
+                event.nick,
+                `Notices are ${channel.noticesEnabled ? "enabled" : "disabled"} in ${argv[1]}`
+            );
         } else {
             client.say(event.nick, "Unknown parameters.");
         }

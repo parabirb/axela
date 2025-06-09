@@ -14,7 +14,9 @@ export function getIntro() {
 }
 
 export function getDesc(user) {
-    // We want the user's refsheet and link as an array if they exist  
+    // We want the user's refsheet and link as an array if they exist
     const urlArray = [user.ref, user.link].filter(Boolean);
-    return user.desc + (urlArray.length > 0 ? ` ( ${urlArray.join(" | ")} )` : "");
+    return (
+        user.desc + (urlArray.length > 0 ? ` ( ${urlArray.join(" | ")} )` : "")
+    );
 }

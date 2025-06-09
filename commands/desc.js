@@ -1,6 +1,11 @@
 import { env } from "node:process";
 
-async function descHandler(client, event, argv, { db, userQuery, userCache, users, eq }) {
+async function descHandler(
+    client,
+    event,
+    argv,
+    { db, userQuery, userCache, users, eq }
+) {
     if (argv.length === 1) {
         client.say(
             event.nick,
@@ -41,7 +46,8 @@ async function descHandler(client, event, argv, { db, userQuery, userCache, user
 const desc = {
     name: "desc",
     usage: "[description] ",
-    description: "Sets your description, and creates a profile if you don't have one. Max 200 characters.",
+    description:
+        "Sets your description, and creates a profile if you don't have one. Max 200 characters.",
     handler: descHandler,
 };
 

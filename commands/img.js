@@ -10,7 +10,10 @@ async function imgHandler(client, event, argv, { db, userQuery, users, eq }) {
     }
 
     if (argv[1].length > 50) {
-        client.say(event.nick, "Your URL is too long! It must be less than 50 characters.");
+        client.say(
+            event.nick,
+            "Your URL is too long! It must be less than 50 characters."
+        );
         return;
     }
 
@@ -20,10 +23,7 @@ async function imgHandler(client, event, argv, { db, userQuery, users, eq }) {
             .update(users)
             .set({ ref: argv[1] })
             .where(eq(users.nick, event.nick.toLowerCase()));
-        client.say(
-            event.nick,
-            "Your image has been updated."
-        );
+        client.say(event.nick, "Your image has been updated.");
     } else {
         client.say(
             event.nick,

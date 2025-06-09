@@ -10,7 +10,10 @@ async function linkHandler(client, event, argv, { db, userQuery, users, eq }) {
     }
 
     if (argv[1].length > 50) {
-        client.say(event.nick, "Your URL is too long! It must be less than 50 characters.");
+        client.say(
+            event.nick,
+            "Your URL is too long! It must be less than 50 characters."
+        );
         return;
     }
 
@@ -20,10 +23,7 @@ async function linkHandler(client, event, argv, { db, userQuery, users, eq }) {
             .update(users)
             .set({ link: argv[1] })
             .where(eq(users.nick, event.nick.toLowerCase()));
-        client.say(
-            event.nick,
-            "Your link has been updated."
-        );
+        client.say(event.nick, "Your link has been updated.");
     } else {
         client.say(
             event.nick,
@@ -35,8 +35,7 @@ async function linkHandler(client, event, argv, { db, userQuery, users, eq }) {
 const link = {
     name: "link",
     usage: "[url] ",
-    description:
-        "Sets your profile link to the specified link.",
+    description: "Sets your profile link to the specified link.",
     handler: linkHandler,
 };
 
