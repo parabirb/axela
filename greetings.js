@@ -2,8 +2,8 @@ import { env } from "node:process";
 import { randomBytes } from "node:crypto";
 
 const INTROS = [
-    `thumbs through ${env.PRONOUN} files,`,
-    `calls ${env.PRONOUN} oracle,`,
+    `thumbs through ${env.PRONOUN} files...`,
+    `calls ${env.PRONOUN} oracle...`,
     `looks through the phonebook,`,
     `thinks...`,
     `gleams:`,

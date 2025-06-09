@@ -165,7 +165,7 @@ client.on("join", async (event) => {
                 cachedGreet.time + 3600 * 1000 * Number(env.GREET_COOLDOWN) <=
                     Date.now())
         ) {
-            client.action(event.channel, `${getIntro()} ${getDesc(sqlUser)}`);
+            client.action(event.channel, `${getIntro()} "${getDesc(sqlUser)}"`);
             greetCache.insertOne({
                 nick: event.nick,
                 channel: event.channel,
@@ -220,7 +220,7 @@ client.on("nick", async (event) => {
                         3600 * 1000 * Number(env.GREET_COOLDOWN) <=
                         Date.now()
                 ) {
-                    client.action(channel, `${getIntro()} ${getDesc(sqlUser)}`);
+                    client.action(channel, `${getIntro()} "${getDesc(sqlUser)}"`);
                     greetCache.insertOne({
                         nick: event.new_nick,
                         channel,
