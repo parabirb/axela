@@ -45,6 +45,9 @@ async function noticeHandler(
             client.say(event.nick, "Unknown parameters.");
         }
     }
+    else {
+        client.say(event.nick, "You can't do that.");
+    }
 }
 
 const notice = {
