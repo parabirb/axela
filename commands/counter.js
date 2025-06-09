@@ -4,12 +4,12 @@ async function counterHandler(
     client,
     event,
     argv,
-    { db, userQuery, users, eq }
+    { db, userQuery, users, eq },
 ) {
     if (argv.length === 1 || argv.length > 3) {
         client.say(
             event.nick,
-            `Incorrect usage. See ${env.PREFIX}help counter for more info.`
+            `Incorrect usage. See ${env.PREFIX}help counter for more info.`,
         );
     } else if (argv.length === 2) {
         const user = await userQuery.execute({
@@ -19,7 +19,7 @@ async function counterHandler(
         if (!user) {
             client.say(
                 event.nick,
-                "You need a profile to use counter commands on yourself."
+                "You need a profile to use counter commands on yourself.",
             );
             return;
         }
@@ -47,7 +47,7 @@ async function counterHandler(
             case "show": {
                 client.say(
                     event.nick,
-                    `Your profile has been viewed ${user.counter} times.`
+                    `Your profile has been viewed ${user.counter} times.`,
                 );
                 break;
             }
@@ -56,21 +56,17 @@ async function counterHandler(
                 client.say(event.nick, "Unrecognized parameters.");
             }
         }
-    } else if (argv.length === 3) {
-        if (argv[1] === "show") {
-            const user = await userQuery.execute({
-                nick: argv[2].toLowerCase(),
-            });
-            if (user) {
-                client.say(
-                    event.nick,
-                    `${argv[2]} has ${user.counter} profile views.`
-                );
-            } else {
-                client.say(event.nick, "That user is not registered with me.");
-            }
+    } else if (argv.length === 3 && argv[1] === "show") {
+        const user = await userQuery.execute({
+            nick: argv[2].toLowerCase(),
+        });
+        if (user) {
+            client.say(
+                event.nick,
+                `${argv[2]} has ${user.counter} profile views.`,
+            );
         } else {
-            client.say(event.nick, "Unrecognized parameters.");
+            client.say(event.nick, "That user is not registered with me.");
         }
     } else {
         client.say(event.nick, "Unrecognized parameters.");
