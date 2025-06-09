@@ -10,7 +10,7 @@ async function whoHandler(client, event, argv, { userQuery }) {
         return;
     }
 
-    const user = await userQuery({ nick: argv[1].toLowerCase() });
+    const user = await userQuery.execute({ nick: argv[1].toLowerCase() });
 
     if (user) {
         client.say(event.nick, `${argv[1]} is: ${getDesc(user)}`);
