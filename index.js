@@ -207,7 +207,7 @@ client.on("nick", async (event) => {
         userCache.remove(cachedUser);
         cachedUser.nick = event.new_nick;
         userCache.insertOne(cachedUser);
-        const sqlUser = await userQuery.execute({ nick: event.nick.toLowerCase() });
+        const sqlUser = await userQuery.execute({ nick: event.new_nick.toLowerCase() });
         if (sqlUser) {
             for (const channel of Object.keys(cachedUser.channels)) {
                 const cachedGreet = greetCache.findOne({
