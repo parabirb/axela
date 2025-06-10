@@ -4,12 +4,12 @@ async function noticeHandler(
     client,
     event,
     argv,
-    { db, userCache, channels, eq, channelQuery }
+    { db, userCache, channels, eq, channelQuery },
 ) {
     if (argv.length !== 3) {
         client.say(
             event.nick,
-            `Incorrect usage. See ${env.PREFIX}notice who for more info.`
+            `Incorrect usage. See ${env.PREFIX}notice who for more info.`,
         );
         return;
     }
@@ -19,6 +19,7 @@ async function noticeHandler(
     });
 
     if (
+        user &&
         Object.keys(user.channels).includes(argv[1]) &&
         (user.channels[argv[1]].modes.includes("q") ||
             user.channels[argv[1]].modes.includes("o") ||
@@ -31,7 +32,7 @@ async function noticeHandler(
                 .where(eq(channels.name, argv[1]));
             client.say(
                 event.nick,
-                `The notice preference in ${argv[1]} has been updated.`
+                `The notice preference in ${argv[1]} has been updated.`,
             );
         } else if (argv[2] === "show") {
             const channel = await channelQuery.execute({
@@ -39,13 +40,12 @@ async function noticeHandler(
             });
             client.say(
                 event.nick,
-                `Notices are ${channel.noticesEnabled ? "enabled" : "disabled"} in ${argv[1]}`
+                `Notices are ${channel.noticesEnabled ? "enabled" : "disabled"} in ${argv[1]}`,
             );
         } else {
             client.say(event.nick, "Unknown parameters.");
         }
-    }
-    else {
+    } else {
         client.say(event.nick, "You can't do that.");
     }
 }
