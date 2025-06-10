@@ -38,12 +38,10 @@ async function noticeHandler(
             const channel = await channelQuery.execute({
                 name: argv[2],
             });
-            if (channel)
-                client.say(
-                    event.nick,
-                    `Notices are ${channel.noticesEnabled ? "enabled" : "disabled"} in ${argv[1]}`,
-                );
-            else client.say(event.nick, "I'm not in that channel!");
+            client.say(
+                event.nick,
+                `Notices are ${channel.noticesEnabled ? "enabled" : "disabled"} in ${argv[1]}`,
+            );
         } else {
             client.say(event.nick, "Unknown parameters.");
         }
