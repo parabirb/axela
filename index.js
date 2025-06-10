@@ -340,6 +340,12 @@ client.on("privmsg", async (event) => {
                 eq,
                 colors,
             });
+        else
+            commands
+                .find((command) => command.name === "help")
+                .handler(client, event, ["help"], {
+                    commands,
+                });
     } else if (
         env.MIGRATION &&
         event.nick === "Alexa" &&
