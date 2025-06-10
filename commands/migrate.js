@@ -1,17 +1,22 @@
 import { env } from "node:process";
 
-async function migrateHandler(client, event, argv, { userQuery }) {
+async function migrateHandler(client, event, argv, { userQuery, userCache }) {
     const user = await userQuery.execute({ nick: event.nick });
-    if (user) {
-        console.log(user);
+    const cachedAlexa = await userCache.findOne({ nick: "Alexa" });
+    if (!cachedAlexa) {
         client.say(
             event.nick,
-            "I cannot migrate your profile from Alexa if you already have a description set."
+            "Alexa appears to be down. I cannot migrate your nick.",
+        );
+    } else if (user) {
+        client.say(
+            event.nick,
+            "I cannot migrate your profile from Alexa if you already have a description set.",
         );
     } else {
         client.action(
             event.nick,
-            `is working on migrating your description. Please wait.`
+            `is working on migrating your description. Please wait.`,
         );
         client.say("Alexa", `!who ${event.nick}`);
     }

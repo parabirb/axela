@@ -366,6 +366,11 @@ client.on("privmsg", async (event) => {
                 userCache.update(cachedUser);
             }
         }
+    } else if (event.target === env.NICK && event.nick !== "Alexa") {
+        client.say(
+            event.nick,
+            `I don't understand what you're trying to do. You can say ${env.PREFIX}help for help.`,
+        );
     }
 });
 
