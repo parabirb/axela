@@ -27,7 +27,7 @@ async function noticeHandler(
         if (optedOutUser)
             client.say(event.nick, "You're already opted out of notices!");
         else {
-            db.insert(optedOut).values({
+            await db.insert(optedOut).values({
                 nick: event.nick,
             });
             client.say(event.nick, "You have been opted out of notices.");
