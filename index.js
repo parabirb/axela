@@ -392,30 +392,29 @@ client.on("mode", (event) => {
     if (!event.target.startsWith("#")) return;
 
     for (const mode of event.modes) {
-        if (mode.param) {
-            const user = userCache.findOne({ nick: mode.param });
-            // +b, +e, etc. have host targets, so we need to check if the target's actually in the cache.
-            // there's probably a better way to do this, i'll fix it later
-            if (!user) continue;
-            else if (users.channels[event.target]) {
-                if (mode[0] === "+") {
-                    user.channels[event.target].modes.push(mode[1]);
-                } else if (mode[0] === "-") {
-                    user.channels[event.target].modes.splice(
-                        user.channels[event.target].modes.indexOf(mode[1]),
-                        1,
-                    );
-                }
+        if (!mode.param) continue;
+        const user = userCache.findOne({ nick: mode.param });
+        // +b, +e, etc. have host targets, so we need to check if the target's actually in the cache.
+        // there's probably a better way to do this, i'll fix it later
+        if (!user) continue;
+        else if (users.channels[event.target]) {
+            if (mode[0] === "+") {
+                user.channels[event.target].modes.push(mode[1]);
+            } else if (mode[0] === "-") {
+                user.channels[event.target].modes.splice(
+                    user.channels[event.target].modes.indexOf(mode[1]),
+                    1,
+                );
+            }
 
-                userCache.update(user);
-            }
-            // Weird, but let's handle it
-            else if (mode[0] === "+") {
-                users.channels[event.target] = {
-                    modes: [mode[1]],
-                };
-                userCache.update(user);
-            }
+            userCache.update(user);
+        }
+        // Weird, but let's handle it
+        else if (mode[0] === "+") {
+            users.channels[event.target] = {
+                modes: [mode[1]],
+            };
+            userCache.update(user);
         }
     }
 });
