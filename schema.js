@@ -16,3 +16,7 @@ export const channels = sqliteTable("channels", {
     noticesEnabled: integer({ mode: "boolean" }).default(true),
     greetingsEnabled: integer({ mode: "boolean" }).default(true),
 });
+
+export const optedOut = sqliteTable("optedOut", {
+    nick: text().unique().notNull().primaryKey(),
+});

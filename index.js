@@ -5,7 +5,7 @@ import Loki from "lokijs";
 import { eq, sql } from "drizzle-orm";
 import colors from "irc-colors";
 import { db } from "./db.js";
-import { users, channels } from "./schema.js";
+import { users, channels, optedOut } from "./schema.js";
 import { getIntro, getDesc } from "./greetings.js";
 import commands from "./commands.js";
 
@@ -61,7 +61,12 @@ const userQuery = db.query.users
     .prepare();
 const channelQuery = db.query.channels
     .findFirst({
-        where: (users) => eq(users.name, sql.placeholder("name")),
+        where: (channels) => eq(channels.name, sql.placeholder("name")),
+    })
+    .prepare();
+const optedOutQuery = db.query.optedOut
+    .findFirst({
+        where: (optedOut) => eq(optedOut.nick, sql.placeholder("nick")),
     })
     .prepare();
 
@@ -143,6 +148,9 @@ client.on("join", async (event) => {
             nick: event.nick,
             channel: event.channel,
         });
+        const optedOutUser = optedOutQuery.execute({
+            nick: event.nick,
+        });
         if (cachedUser) {
             cachedUser.channels[event.channel] = {
                 modes: [],
@@ -181,7 +189,7 @@ client.on("join", async (event) => {
             return;
         }
 
-        if (!sqlUser) {
+        if (!(sqlUser || optedOutUser)) {
             const channel = await channelQuery.execute({ name: event.channel });
             if (channel.noticesEnabled) client.notice(event.nick, env.NOTICE);
         }
@@ -341,6 +349,8 @@ client.on("privmsg", async (event) => {
                 users,
                 eq,
                 colors,
+                optedOut,
+                optedOutQuery,
             });
         else {
             try {

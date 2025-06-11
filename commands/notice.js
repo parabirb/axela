@@ -5,9 +5,9 @@ async function noticeHandler(
     client,
     event,
     argv,
-    { db, userCache, channels, eq, channelQuery },
+    { db, userCache, channels, eq, channelQuery, optedOut, optedOutQuery },
 ) {
-    if (argv.length !== 3) {
+    if (argv.length < 2 || argv.length > 3) {
         client.say(
             event.nick,
             `Incorrect usage. See ${env.PREFIX}notice who for more info.`,
@@ -19,7 +19,27 @@ async function noticeHandler(
         nick: event.nick,
     });
 
-    if (
+    if (argv.length === 2 && argv[1] === "on") {
+        await db.delete(optedOut).where(eq(optedOut.nick, event.nick));
+        client.say(event.nick, "You have been opted into notices.");
+    } else if (argv.length === 2 && argv[1] === "off") {
+        const optedOutUser = await optedOutQuery.execute({ nick: event.nick });
+        if (optedOutUser)
+            client.say(event.nick, "You're already opted out of notices!");
+        else {
+            db.insert(optedOut).values({
+                nick: event.nick,
+            });
+            client.say(event.nick, "You have been opted out of notices.");
+        }
+    } else if (argv.length === 2 && argv[1] === "show") {
+        const optedOutUser = await optedOutQuery.execute({ nick: event.nick });
+        client.say(
+            event.nick,
+            `You are opted ${optedOutUser ? "out of" : "into"} notices.`,
+        );
+    } else if (
+        argv.length === 3 &&
         user &&
         Object.keys(user.channels).includes(argv[1]) &&
         isOP(user.channels[argv[1]].modes)
@@ -51,9 +71,9 @@ async function noticeHandler(
 
 const notice = {
     name: "notice",
-    usage: "[channel] [on | off | show] ",
+    usage: "[channel?] [on | off | show] ",
     description:
-        "Intended for use by channel ops. Turns notices for unregistered users on or off in a specified channel, or displays the status.",
+        "Turns notices for unregistered users on or off for a user or specified channel, or displays the status.",
     handler: noticeHandler,
 };
 
