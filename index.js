@@ -148,7 +148,7 @@ client.on("join", async (event) => {
             nick: event.nick,
             channel: event.channel,
         });
-        const optedOutUser = optedOutQuery.execute({
+        const optedOutUser = await optedOutQuery.execute({
             nick: event.nick,
         });
         if (cachedUser) {
