@@ -407,7 +407,7 @@ client.on("mode", (event) => {
         // +b, +e, etc. have host targets, so we need to check if the target's actually in the cache.
         // there's probably a better way to do this, i'll fix it later
         if (!user) continue;
-        else if (users.channels[event.target]) {
+        else if (user.channels[event.target]) {
             if (mode[0] === "+") {
                 user.channels[event.target].modes.push(mode[1]);
             } else if (mode[0] === "-") {
