@@ -11,7 +11,9 @@ Axela is a public domain reimplementation of the [Alexa](https://github.com/ebjo
 
 ## To run this code...
 
-First, you need to set up an env file. An example is provided in `.env.example`. If you don't wish to verify TLS certs, set `TLS` to `noverify`. If you don't want TLS at all, simply remove the `TLS` option.
+First, you'll have to install the dependencies of this bot. Do that with `npm i`.
+
+Second, you need to set up an env file. An example is provided in `.env.example`. If you don't wish to verify TLS certs, set `TLS` to `noverify`. If you don't want TLS at all, simply remove the `TLS` option.
 
 Next you'll have to create the SQL DB. To do this, do `npm run migrate`.
 
