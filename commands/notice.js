@@ -1,4 +1,5 @@
 import { env } from "node:process";
+import { isOP } from "../admin.js";
 
 async function noticeHandler(
     client,
@@ -21,9 +22,7 @@ async function noticeHandler(
     if (
         user &&
         Object.keys(user.channels).includes(argv[1]) &&
-        (user.channels[argv[1]].modes.includes("q") ||
-            user.channels[argv[1]].modes.includes("o") ||
-            user.channels[argv[1]].modes.includes("a"))
+        isOP(user.channels[argv[1]].modes)
     ) {
         if (argv[2] === "on" || argv[2] === "off") {
             await db
@@ -38,10 +37,12 @@ async function noticeHandler(
             const channel = await channelQuery.execute({
                 name: argv[2],
             });
-            client.say(
-                event.nick,
-                `Notices are ${channel.noticesEnabled ? "enabled" : "disabled"} in ${argv[1]}`,
-            );
+            if (channel)
+                client.say(
+                    event.nick,
+                    `Notices are ${channel.noticesEnabled ? "enabled" : "disabled"} in ${argv[1]}`,
+                );
+            else client.say(event.nick, "I'm not in that channel!");
         } else {
             client.say(event.nick, "Unknown parameters.");
         }
