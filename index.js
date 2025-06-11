@@ -144,7 +144,9 @@ client.on("join", async (event) => {
             channel: event.channel,
         });
         if (cachedUser) {
-            cachedUser.channels[event.channel] = [];
+            cachedUser.channels[event.channel] = {
+                modes: [],
+            };
             userCache.update(cachedUser);
         } else {
             const channels = {};
