@@ -406,16 +406,15 @@ client.on("mode", (event) => {
                     1,
                 );
             }
-
-            userCache.update(user);
         }
         // Weird, but let's handle it
         else if (mode[0] === "+") {
             users.channels[event.target] = {
                 modes: [mode[1]],
             };
-            userCache.update(user);
         }
+
+        userCache.update(user);
     }
 });
 
